@@ -3,6 +3,7 @@ const { GoogleAuth } = require("google-auth-library");
 const cors = require("cors");
 const path = require("path");
 const dotenv = require("dotenv");
+const admin = require("firebase-admin");
 const app = express();
 const port = 3000;
 const fs = require("fs");
@@ -36,6 +37,12 @@ const credentials = {
   universe_domain: (string = "googleapis.com"),
 };
 
+admin.initializeApp({
+  credential: admin.credential.cert(credentials),
+  databaseURL:
+    "https://pwa-test-a706a-default-rtdb.europe-west1.firebasedatabase.app/",
+});
+
 app.post("/getAccessToken", async (req, res) => {
   try {
     const auth = new GoogleAuth({
@@ -55,6 +62,39 @@ app.post("/getAccessToken", async (req, res) => {
     res.status(500).send(error.message);
   }
 });
+
+app.post("/subscribe-to-topic", async (req, res) => {
+  const { token, topic } = req.body;
+
+  try {
+    await admin.messaging().subscribeToTopic(token, topic);
+    res
+      .status(200)
+      .json({ message: `Successfully subscribed to topic: ${topic}` });
+  } catch (error) {
+    console.error("Error subscribing to topic:", error);
+    res.status(500).json({ error: "Failed to subscribe to topic" }); // Changement ici
+  }
+});
+
+async function sendMessageToTopic(topic, title, body) {
+  const message = {
+    notification: {
+      title: title,
+      body: body,
+    },
+    topic: topic,
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log("Successfully sent message:", response);
+  } catch (error) {
+    console.error("Error sending message", error);
+  }
+}
+
+sendMessageToTopic("news", "Aniss Aziz !!!!!", "Check out the latests updates");
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
