@@ -94,7 +94,7 @@ async function sendMessageToTopic(topic, title, body) {
   }
 }
 
-sendMessageToTopic("news", "Aniss Aziz !!!!!", "Check out the latests updates");
+// sendMessageToTopic("news", "Aniss Aziz !!!!!", "Check out the latests updates");
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
